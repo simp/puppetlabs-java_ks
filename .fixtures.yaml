@@ -1,0 +1,4 @@
+---
+fixtures:
+  symlinks:
+    java_ks: "#{source_dir}"

@@ -22,7 +22,7 @@ The java_ks module uses a combination of keytool and openssl to manage entries i
 Module Description
 ------------------
 
-The java_ks module contains a type called 'java_ks' and a single provider named 'keytool'.  Their purpose is to enable importation of arbitrary, already generated and signed certificates into a java keystore for use by various applications. 
+The java_ks module contains a type called 'java_ks' and a single provider named 'keytool'.  Their purpose is to enable importation of arbitrary, already generated and signed certificates into a java keystore for use by various applications.
 
 Setup
 -----
@@ -42,7 +42,7 @@ To use the java_ks module's functionality, declare each java_ks resource you nee
       password     => 'puppet',
       trustcacerts => true,
     }
-    
+
     java_ks { 'puppetca:keystore':
       ensure       => latest,
       certificate  => '/etc/puppet/ssl/certs/ca.pem',
@@ -50,7 +50,7 @@ To use the java_ks module's functionality, declare each java_ks resource you nee
       password     => 'puppet',
       trustcacerts => true,
     }
-  
+
     java_ks { 'broker.example.com:/etc/activemq/broker.ks':
       ensure      => latest,
       certificate => '/etc/puppet/ssl/certs/broker.example.com.pe-internal-broker.pem',
@@ -87,11 +87,11 @@ Some java applications do not properly send intermediary certificate authorities
 
 #### `ensure`
 
-The `ensure` parameter accepts three attributes: absent, present, and latest.  Latest verifies md5 certificate fingerprints for the stored certificate and the source file.  
+The `ensure` parameter accepts three attributes: absent, present, and latest.  Latest verifies md5 certificate fingerprints for the stored certificate and the source file.
 
 #### `password`
 
-The password used to protect the keystore. If private keys are also protected, this password will be used to attempt to unlock them. 
+The password used to protect the keystore. If private keys are also protected, this password will be used to attempt to unlock them.
 
 #### `password_file`
 
@@ -115,9 +115,9 @@ Certificate authorities input into a keystore aren’t trusted by default, so if
 
 ### Namevars
 
-Java_ks supports multiple certificates with different keystores but the same alias by implementing Puppet's composite namevar functionality.  Titles map to namevars via `$alias:$target` (alias of certificate, colon, on-disk path to the keystore). If you create dependencies on these resources you need to remember to use the same title syntax outlined for generating the composite namevars. 
+Java_ks supports multiple certificates with different keystores but the same alias by implementing Puppet's composite namevar functionality.  Titles map to namevars via `$alias:$target` (alias of certificate, colon, on-disk path to the keystore). If you create dependencies on these resources you need to remember to use the same title syntax outlined for generating the composite namevars.
 
-*Note about composite namevars:*  
+*Note about composite namevars:*
 The way composite namevars currently work, you must have the colon in the title. This is true *even if you define name and target parameters.*  The title can be `foo:bar`, but the name and target parameters must be `broker.example.com` and `/etc/activemq/broker.ks`. If you follow convention, it will do as you expect and correctly create an entry in the broker.ks keystore with the alias of broker.example.com.
 
 Implementation
@@ -130,7 +130,7 @@ Keytool is a provider that uses a combination of the binaries openssl and keytoo
 Limitations
 ------------
 
-The java_ks module uses the `keytool` and `openssl` commands. It should work on all systems with these commands. 
+The java_ks module uses the `keytool` and `openssl` commands. It should work on all systems with these commands.
 
 At the moment, Java 7 isn't fully supported, and `ensure => latest` will fail.
 
