@@ -10,7 +10,7 @@ describe 'managing java truststores' do
         password     => 'puppet',
         trustcacerts => true,
       }
-    }) { |r| [0,2].should include r.exit_code}
+    }) { |r| [0,2].is_expected.to include r.exit_code}
   end
 
   it 'verifies the truststore' do

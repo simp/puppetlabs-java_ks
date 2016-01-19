@@ -1,4 +1,13 @@
-pkg
-metadata.json
-.rspec_system/
-Gemfile.lock
+.*.sw?
+.yardoc
+dist
+/pkg
+/spec/fixtures/*
+!/spec/fixtures/site.pp
+/.rspec_system
+/.vagrant
+/.bundle
+/Gemfile.lock
+/vendor
+/junit
+/log

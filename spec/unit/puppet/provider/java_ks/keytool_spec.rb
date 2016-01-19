@@ -11,6 +11,7 @@ describe Puppet::Type.type(:java_ks).provider(:keytool) do
       :password    => 'puppet',
       :certificate => '/tmp/app.example.com.pem',
       :private_key => '/tmp/private/app.example.com.pem',
+      :storetype   => 'jceks',
       :provider    => described_class.name
     }
   end
@@ -68,15 +69,15 @@ describe Puppet::Type.type(:java_ks).provider(:keytool) do
   describe 'when importing a private key and certifcate' do
     describe '#to_pkcs12' do
       it 'converts a certificate to a pkcs12 file' do
-        provider.expects(:run_command).with([
-            'myopenssl', 'pkcs12', '-export', '-passout', 'stdin',
-            '-in', resource[:certificate],
-            '-inkey', resource[:private_key],
-            '-name', resource[:name],
-            '-out', '/tmp/testing.stuff'
-          ],
-          any_parameters
-        )
+        provider.stubs(:get_password).returns(resource[:password])
+        File.stubs(:read).with(resource[:private_key]).returns('private key')
+        File.stubs(:read).with(resource[:certificate]).returns('certificate')
+        OpenSSL::PKey::RSA.expects(:new).with('private key').returns('priv_obj')
+        OpenSSL::X509::Certificate.expects(:new).with('certificate').returns('cert_obj')
+
+        pkcs_double = BogusPkcs.new()
+        pkcs_double.expects(:to_der)
+        OpenSSL::PKCS12.expects(:create).with(resource[:password],resource[:name],'priv_obj','cert_obj',[]).returns(pkcs_double)
         provider.to_pkcs12('/tmp/testing.stuff')
       end
     end
@@ -88,7 +89,21 @@ describe Puppet::Type.type(:java_ks).provider(:keytool) do
             'mykeytool', '-importkeystore', '-srcstoretype', 'PKCS12',
             '-destkeystore', resource[:target],
             '-srckeystore', '/tmp/testing.stuff',
-            '-alias', resource[:name]
+            '-alias', resource[:name],
+          ], any_parameters
+        )
+        provider.import_ks
+      end
+
+      it 'should use destkeypass when provided' do
+        dkp = resource.dup
+        dkp[:destkeypass] = 'keypass'
+        provider.expects(:to_pkcs12).with('/tmp/testing.stuff')
+        provider.expects(:run_command).with([
+            'mykeytool', '-importkeystore', '-srcstoretype', 'PKCS12',
+            '-destkeystore', dkp[:target],
+            '-srckeystore', '/tmp/testing.stuff',
+            '-alias', dkp[:name], '-destkeypass', dkp[:destkeypass]
           ], any_parameters
         )
         provider.import_ks
@@ -97,6 +112,25 @@ describe Puppet::Type.type(:java_ks).provider(:keytool) do
   end
 
   describe 'when creating entires in a keystore' do
+    let(:params) do
+      {
+        :title       => 'app.example.com:/tmp/application.jks',
+        :name        => 'app.example.com',
+        :target      => '/tmp/application.jks',
+        :password    => 'puppet',
+        :certificate => '/tmp/app.example.com.pem',
+        :private_key => '/tmp/private/app.example.com.pem',
+        :provider    => described_class.name
+      }
+    end
+
+    let(:resource) do
+      Puppet::Type.type(:java_ks).new(params)
+    end
+
+    let(:provider) do
+      resource.provider
+    end
     it 'should call import_ks if private_key and certificate are provided' do
       provider.expects(:import_ks)
       provider.create
@@ -109,7 +143,7 @@ describe Puppet::Type.type(:java_ks).provider(:keytool) do
           'mykeytool', '-importcert', '-noprompt',
           '-alias', no_pk[:name],
           '-file', no_pk[:certificate],
-          '-keystore', no_pk[:target]
+          '-keystore', no_pk[:target],
         ], any_parameters
       )
       no_pk.provider.expects(:import_ks).never
@@ -128,4 +162,8 @@ describe Puppet::Type.type(:java_ks).provider(:keytool) do
       provider.destroy
     end
   end
+end
+
+class BogusPkcs
+
 end

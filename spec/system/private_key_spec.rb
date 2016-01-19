@@ -9,7 +9,7 @@ describe 'managing java private keys' do
         private_key  => '/var/lib/puppet/ssl/private_keys/main.foo.vm.pem',
         password     => 'puppet',
       }
-    }) { |r| [0,2].should include r.exit_code}
+    }) { |r| [0,2].is_expected.to include r.exit_code}
   end
 
   it 'verifies the private key' do
@@ -42,7 +42,7 @@ describe 'managing java private keys' do
           ensure => file,
           source => '/var/lib/puppet/ssl/private_keys/main.foo.vm.pem',
         }
-      }) { |r| [0,2].should include r.exit_code}
+      }) { |r| [0,2].is_expected.to include r.exit_code}
     end
 
     it 'creates a keystore' do
@@ -54,7 +54,7 @@ describe 'managing java private keys' do
           chain        => 'puppet:///modules/keys/ca.pem',
           password     => 'puppet',
         }
-      }) { |r| [0,2].should include r.exit_code}
+      }) { |r| [0,2].is_expected.to include r.exit_code}
     end
 
     it 'verifies the private key' do
